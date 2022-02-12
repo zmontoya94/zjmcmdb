@@ -12,8 +12,14 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 import com.promineotech.zjmcmdb.exception.computerexists;
 import com.promineotech.zjmcmdb.exception.computernotfound;
+import com.promineotech.zjmcmdb.exception.softwareexists;
+import com.promineotech.zjmcmdb.exception.softwarenotfound;
+import com.promineotech.zjmcmdb.exception.userexists;
+import com.promineotech.zjmcmdb.exception.usernotfound;
 import com.promineotech.zjmcmdb.model.zjmcomputerinputmodel;
 import com.promineotech.zjmcmdb.model.zjmcomputermodel;
+import com.promineotech.zjmcmdb.model.zjmsoftwareinputmodel;
+import com.promineotech.zjmcmdb.model.zjmsoftwaremodel;
 import com.promineotech.zjmcmdb.model.zjmuserinputmodel;
 import com.promineotech.zjmcmdb.model.zjmusermodel;
 import com.promineotech.zjmcmdb.service.zjmcmdbservice;
@@ -36,7 +42,7 @@ public class zjmcmdbcontroller {
     return service.all();
   }
   @Operation(summary = "Get's a computer by it's unique identifier.")
-  @RequestMapping(value = "/computers/{code}", method = RequestMethod.GET)
+  @RequestMapping(value = "/computers/{computerID}", method = RequestMethod.GET)
   public zjmcomputermodel get(@PathVariable String code) {
     Optional<zjmcomputermodel> computer = service.get(code);
     if (computer.isPresent()) {
@@ -59,7 +65,7 @@ public class zjmcmdbcontroller {
         "No computers found matching the value provided");
   }
   @Operation(summary = "Modifies an existing computer.")
-  @RequestMapping(value = "/computers/{code}", method = RequestMethod.PUT)
+  @RequestMapping(value = "/computers/{computerID}", method = RequestMethod.PUT)
   public zjmcomputermodel update(@PathVariable String code, @RequestBody zjmcomputerinputmodel input) {
     if ((code != null) && (! code.isEmpty())) {
       if (input != null) {
@@ -77,7 +83,7 @@ public class zjmcmdbcontroller {
         "computer identifier or computer input was missing, empty or null");
   }
   @Operation(summary = "Delete or remove a computer.")
-  @RequestMapping(value = "/computer/{code}", method = RequestMethod.DELETE)
+  @RequestMapping(value = "/computer/{computerID}", method = RequestMethod.DELETE)
   public zjmcomputermodel delete(@PathVariable String code) {
     if ((code != null) && (! code.isEmpty())) {
       try {
@@ -128,7 +134,7 @@ public class zjmcmdbcontroller {
     return service.all1();
   }
   @Operation(summary = "Get's a user by it's unique identifier.")
-  @RequestMapping(value = "/users/{code}", method = RequestMethod.GET)
+  @RequestMapping(value = "/users/{userID}", method = RequestMethod.GET)
   public zjmusermodel getUser(@PathVariable String code) {
     Optional<zjmusermodel> computer = service.getUser(code);
     if (computer.isPresent()) {
@@ -141,14 +147,152 @@ public class zjmcmdbcontroller {
  
   @Operation(summary = "Finds users matching all of part of the specified username.")
   @RequestMapping(value = "/users/find", method = RequestMethod.GET)
-  public List<zjmcomputermodel> findusers(@RequestParam String username) { 
-    List<zjmcomputermodel> countries = service.find(username);
+  public List<zjmuserinputmodel> findusers(@RequestParam String username) { 
+    List<zjmuserinputmodel> countries = service.findusers(username);
     if (! countries.isEmpty()) {
       return(countries);
     }
     
     throw new ResponseStatusException(HttpStatus.NOT_FOUND, 
-        "No computers found matching the value provided");
+        "No users found matching the value provided");
   }
+  
+  @Operation(summary = "Modifies an existing user.")
+  @RequestMapping(value = "/users/{userID}", method = RequestMethod.PUT)
+  public zjmusermodel updateUser(@PathVariable String code, @RequestBody zjmuserinputmodel input) {
+    if ((code != null) && (! code.isEmpty())) {
+      if (input != null) {
+        zjmusermodel updated = service.modify(code, input);
+        if (updated != null) {
+          return(updated);
+        }
+        
+        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, 
+            "Failed to updated user due to an unhandled or unexpected error.");
+      }
+    }
+    
+    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+        "computer identifier or user input was missing, empty or null");
+  }
+  
+  @Operation(summary = "Create a new user.")
+  @RequestMapping(value = "/users", method = RequestMethod.POST)
+  public zjmuserinputmodel createUser(@RequestBody zjmuserinputmodel input) {
+    if (input != null) {
+      try {
+        zjmuserinputmodel result = service.createUser(input);
+        if (result != null) {
+          return(result);
+        }
+      }
+      catch (userexists e) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+            e.getMessage());
+      }
+      
+      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, 
+          "Failed to create user due to an unhandled or unexpected internal error");
+    }
+    
+    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+        "user input was empty or null");
+  }
+  
+  
+  @Operation(summary = "Delete or remove a user.")
+  @RequestMapping(value = "/user/{userID}", method = RequestMethod.DELETE)
+  public zjmusermodel deleteUser(@PathVariable String code) {
+    if ((code != null) && (! code.isEmpty())) {
+      try {
+        zjmusermodel result = service.removeuser(code);
+        if (result != null) {
+          return(result);
+        }
+      } catch(usernotfound e) {
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, 
+            "Requested user doesn't exist.");
+      }
+      
+      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, 
+          "Failed to remove user due to an unhandled or unexpected error.");
+    }   
+    
+    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+        "userID was empty or null");
+  }
+  
+  //Software
+  
+  @Operation(summary = "Get's all software.")
+  @RequestMapping(value = "/software", method = RequestMethod.GET)
+  public List<zjmsoftwaremodel> allsoftware() {
+    return service.allsoftware();
+  }
+  
+  @Operation(summary = "Delete or remove a software.")
+  @RequestMapping(value = "/software/{softwareID}", method = RequestMethod.DELETE)
+  public zjmsoftwaremodel deleteSoftware(@PathVariable String code) {
+    if ((code != null) && (! code.isEmpty())) {
+      try {
+        zjmsoftwaremodel result = service.removeSoftware(code);
+        if (result != null) {
+          return(result);
+        }
+      } catch(softwarenotfound e) {
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, 
+            "Requested software doesn't exist.");
+      }
+      
+      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, 
+          "Failed to remove software due to an unhandled or unexpected error.");
+    }   
+    
+    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+        "softwareID was empty or null");
+  }
+  
+  @Operation(summary = "Create new software.")
+  @RequestMapping(value = "/software", method = RequestMethod.POST)
+  public zjmsoftwareinputmodel createSoftware(@RequestBody zjmsoftwareinputmodel input) {
+    if (input != null) {
+      try {
+        zjmsoftwareinputmodel result = service.createSoftware(input);
+        if (result != null) {
+          return(result);
+        }
+      }
+      catch (softwareexists e) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+            e.getMessage());
+      }
+      
+      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, 
+          "Failed to create software due to an unhandled or unexpected internal error");
+    }
+    
+    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+        "software input was empty or null");
+  }
+  
+  @Operation(summary = "Modifies an existing software.")
+  @RequestMapping(value = "/software/{softwareID}", method = RequestMethod.PUT)
+  public zjmsoftwaremodel updateSoftware(@PathVariable String code, @RequestBody zjmsoftwareinputmodel input) {
+    if ((code != null) && (! code.isEmpty())) {
+      if (input != null) {
+        zjmsoftwaremodel updated = service.modifySoftware(code, input);
+        if (updated != null) {
+          return(updated);
+        }
+        
+        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, 
+            "Failed to updated software due to an unhandled or unexpected error.");
+      }
+    }
+    
+    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+        "computer identifier or software input was missing, empty or null");
+  } 
+  
   
 }

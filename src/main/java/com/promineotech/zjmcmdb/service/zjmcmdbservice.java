@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 import com.promineotech.zjmcmdb.model.zjmcomputerinputmodel;
 import com.promineotech.zjmcmdb.model.zjmcomputermodel;
+import com.promineotech.zjmcmdb.model.zjmsoftwareinputmodel;
+import com.promineotech.zjmcmdb.model.zjmsoftwaremodel;
 import com.promineotech.zjmcmdb.model.zjmuserinputmodel;
 import com.promineotech.zjmcmdb.model.zjmusermodel;
 
@@ -69,5 +71,21 @@ public interface zjmcmdbservice  {
   zjmusermodel remove1(String code, zjmuserinputmodel input);
 
   Optional<zjmusermodel> getUser(String code);
+
+  List<zjmuserinputmodel> findusers(String username);
+
+  zjmuserinputmodel createUser(zjmuserinputmodel input);
+
+  zjmusermodel removeuser(String code);
+
+  zjmsoftwaremodel removeSoftware(String code);
+
+  List<zjmsoftwaremodel> allsoftware();
+
+  zjmsoftwareinputmodel createSoftware(zjmsoftwareinputmodel input);
+
+  zjmsoftwaremodel modifySoftware(String code, zjmcomputerinputmodel input);
+
+  zjmsoftwaremodel modifySoftware(String code, zjmsoftwareinputmodel input);
   
 }
