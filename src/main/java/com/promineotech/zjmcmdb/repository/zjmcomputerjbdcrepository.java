@@ -24,14 +24,14 @@ public class zjmcomputerjbdcrepository implements zjmComputerRepository {
     Map<String,Object> parameters = new HashMap<>();
     parameters.put("code", computer);
     
-    List<zjmcomputermodel> cities = provider.query(sql, parameters, (rs, rowNum) -> {
+    List<zjmcomputermodel> computers = provider.query(sql, parameters, (rs, rowNum) -> {
       int id = rs.getInt("computerID");
-      zjmcomputermodel city = new zjmcomputermodel(id,
+      zjmcomputermodel computer1 = new zjmcomputermodel(id,
           rs.getString("computerID"), rs.getString("hostname"), sql, sql);
-      return(city);
+      return(computer1);
     });
     
-    return(cities.stream());
+    return(computers.stream());
   }
 
   @Override

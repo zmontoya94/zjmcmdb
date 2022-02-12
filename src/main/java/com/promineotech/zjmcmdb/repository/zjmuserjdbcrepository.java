@@ -26,14 +26,14 @@ public class zjmuserjdbcrepository implements zjmuserrepository {
     Map<String,Object> parameters = new HashMap<>();
     parameters.put("code", user);
     
-    List<zjmusermodel> cities = provider.query(sql, parameters, (rs, rowNum) -> {
-      int id = rs.getInt("ID");
-      zjmusermodel city = new zjmusermodel(id,
-          rs.getString("CountryCode"), rs.getString("Name"), sql, sql);
-      return(city);
+    List<zjmusermodel> users = provider.query(sql, parameters, (rs, rowNum) -> {
+      int id = rs.getInt("userID");
+      zjmusermodel user1 = new zjmusermodel(id,
+          rs.getString("userID"), rs.getString("Name"), sql, sql);
+      return(user1);
     });
     
-    return(cities.stream());
+    return(users.stream());
   }
 
   @Override
